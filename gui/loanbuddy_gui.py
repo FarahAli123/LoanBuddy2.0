@@ -22,27 +22,29 @@ def main():
 
     ttk.Label(
         form,
-        text="Change the loan amount to see a prediction for a sample loan.",
+        text="Change the initial interest rate to see a prediction for a sample loan.",
         wraplength=360,
     ).pack(anchor="w")
 
-    ttk.Label(form, text="Loan amount ($)").pack(anchor="w", pady=(12, 0))
-    amount_entry = ttk.Entry(form)
-    amount_entry.insert(0, str(sample_loan["GrossApproval"]))
-    amount_entry.pack(fill="x")
+    ttk.Label(form, text="Initial interest rate (%)").pack(
+        anchor="w", pady=(12, 0)
+    )
+    rate_entry = ttk.Entry(form)
+    rate_entry.insert(0, str(sample_loan["InitialInterestRate"]))
+    rate_entry.pack(fill="x")
 
     result = tk.StringVar(master=window)
 
     def show_prediction():
         try:
-            amount = float(amount_entry.get())
-            if not math.isfinite(amount) or amount <= 0:
+            rate = float(rate_entry.get())
+            if not math.isfinite(rate) or rate <= 0:
                 raise ValueError
         except ValueError:
-            result.set("Enter a positive loan amount, such as 150000.")
+            result.set("Enter a positive interest rate, such as 8.5.")
             return
 
-        loan = {**sample_loan, "GrossApproval": amount}
+        loan = {**sample_loan, "InitialInterestRate": rate}
         predicted_class, score = predict_loan(loan, model, preprocessor)
         label = "Default" if predicted_class == 1 else "No default"
         result.set(f"Prediction: {label}\nModel default score: {score:.1%}")
@@ -52,7 +54,7 @@ def main():
     )
     ttk.Label(form, textvariable=result).pack(anchor="w")
 
-    amount_entry.focus_set()
+    rate_entry.focus_set()
     window.mainloop()
 
 
