@@ -2,14 +2,16 @@ import math
 import tkinter as tk
 from tkinter import ttk
 
-from src.prediction_service import load_prediction_artifacts, predict_loan
+from src.prediction_service import LoanPredictor
 
 
 def main():
-    model, preprocessor = load_prediction_artifacts()
+    """Open the LoanBuddy interest-rate prediction demo."""
+    predictor = LoanPredictor()
 
+    # Use the fitted preprocessor's imputation values for the sample loan.
     sample_loan = {}
-    for _, pipeline, columns in preprocessor.transformers_:
+    for _, pipeline, columns in predictor.preprocessor.transformers_:
         if columns:
             values = pipeline.named_steps["imputer"].statistics_
             sample_loan.update(zip(columns, values))
@@ -36,6 +38,7 @@ def main():
     result = tk.StringVar(master=window)
 
     def show_prediction():
+        """Validate the interest rate and display the loan prediction."""
         try:
             rate = float(rate_entry.get())
             if not math.isfinite(rate) or rate <= 0:
@@ -44,8 +47,10 @@ def main():
             result.set("Enter a positive interest rate, such as 8.5.")
             return
 
+        # Change only the interest rate in the sample loan.
         loan = {**sample_loan, "InitialInterestRate": rate}
-        predicted_class, score = predict_loan(loan, model, preprocessor)
+        predicted_class, score = predictor.predict(loan)
+
         label = "Default" if predicted_class == 1 else "No default"
         result.set(f"Prediction: {label}\nModel default score: {score:.1%}")
 
